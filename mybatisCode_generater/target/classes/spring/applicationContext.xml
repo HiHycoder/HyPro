@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <!--加载配置文件db.properties-->
+    <context:property-placeholder location="classpath:properties/db.properties"/>
+
+    <!-- 数据库连接池C3P0 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass"
+                  value="${jdbc.driver}"/>
+        <property name="jdbcUrl"
+                  value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <!--配置session工厂-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--指定数据源-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--指定全局配置文件的位置-->
+        <property name="configLocation" value="classpath:mybatis/SqlMapConfig.xml"/>
+        <!--指定mapper映射文件的位置-->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+        <!--指定别名要扫描的包-->
+        <property name="typeAliasesPackage" value="cn.itheima.crm.pojo"/>
+    </bean>
+
+    <!--mapper代理方式的配置-->
+    <!--第一种方式-->
+   <!-- <bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+        &lt;!&ndash;注入sqlSessionFactory工厂&ndash;&gt;
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"/>
+        &lt;!&ndash;配置代理mapper的接口&ndash;&gt;
+        <property name="mapperInterface" value="cn.itheima.mybatis.mapper.UserMapper"/>
+    </bean>-->
+
+   <!-- 第二种方式 通过扫描包的方式配置    (推荐使用)
+       要求: mapper和映射文件在同一级目录并且名字相同 , 如果扫描多个包使用逗号隔开-->
+     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+         <property name="basePackage" value="cn.itheima.crm.mapper"/>
+     </bean>
+
+
+</beans>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--SqlMapConfig.xml是mybatis的核心文件,下边文件的内容是配置事务管理和数据源-->
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--
+     加载顺序: 先: properties中的property中的属性
+             然: 外置的properties文件
+             最后: dataSource中的properties中的属性
+             最后做的配置会生效,把前面的覆盖
+  -->
+    <!--<properties resource="db.properties">
+        <property name="db.driver" value="com.mysql.jdbc.Driver"/>
+    </properties>-->
+
+    <!--开启驼峰命名规则-->
+    <settings>
+        <setting name = "mapUnderscoreToCamelCase" value = "true" />
+    </settings>
+
+    <typeAliases>
+        <!--  给单个实体类取别名
+            type:原来的名字
+            alias:别名
+        -->
+        <!--  <typeAlias type="cn.itheima.mybatis.pojo.User" alias="user"/>-->
+        <!--使用包扫描的方式指定别名,给某一个包下的类取别名,它规则就是类名首字母小写-->
+        <package name="cn.itheima.mybatis.pojo"/>
+    </typeAliases>
+
+    <!--
+        指定运行环境environments
+        default:默认要加载的环境
+    -->
+    <environments default="development">
+
+           <!--指定数据源-->
+        <environment id="development">
+            <!--配置事务管理器-->
+            <transactionManager type="JDBC"/>
+            <!--使用连接池-->
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/mybatis?characterEncoding=utf-8"/>
+                <property name="username" value="root"/>
+                <property name="password" value="123"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!--指定mapper映射文件-->
+    <mappers>
+        <!-- resource基于classpath查找 -->
+        <!--<mapper resource="mapper/UserMapper.xml"/>-->
+        <!--下面的方式真能用在mapper动态代理的开发方式中-->
+        <!--
+            使用条件 : 接口文件和映射文件必须在同一个文件夹中
+            Maven在管理项目的时候,在编译的时候,把java目录下的所有java文件编译为字节码文件,拷贝到classpath目录,把resources目录中所有的配置文件拷贝到classpath目录
+            就会导致java目录中的配置文件不会拷贝到classpath目录
+            所以要在pom文件中增加一段配置,修改maven编译项目的逻辑
+        -->
+        <!-- <mapper class="cn.itheima.mybatis.mapper.UserMapper"/>-->
+
+        <package name="cn.itheima.mybatis.mapper"/>
+        <!--这种配置方式,其实是上面配置方式的简写,所以要遵循上面的配置方式的规则-->
+
+    </mappers>
+</configuration>
+
+

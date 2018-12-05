@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace是命名空间，作用sql语句的隔离，后面还有重要作用 -->
+<mapper namespace="cn.itheima.mybatis.pojo.User">
+    <!--id:唯一标识
+        resultType:结果类型,如果是一个实体类,一定要写上路径的全限定名(包名+类名)
+        parameterType:指定传入进来的参数数据类型
+        #{id}: 占位符,相当于jdbc的“?”,并将输入变量id传到sql,
+        有一个前提,如果要接收的类型是简单数据(8中基本数据类型+String),而且参数的个数是一个的时候,{}中的内容可以任意指定
+    -->
+    <select id="selectById" resultType="cn.itheima.mybatis.pojo.User" parameterType="integer">
+     SELECT * FROM  USER  WHERE id = #{id};
+ </select>
+
+    <!-- parameterType：定义输入到sql中的映射类型，${value}表示使用参数将${value}替换，做字符串的拼接。
+         注意：如果是取简单数量类型的参数，括号中的值必须为value!不能更改!
+         resultType：如果返回值是集合,返回值类型只用定义泛型的类型即可。
+      -->
+    <select id="selectByUserName" resultType="cn.itheima.mybatis.pojo.User" parameterType="string">
+        SELECT  * FROM  USER WHERE username LIKE  ('%${value}%')
+    </select>
+
+    <!--建议使用Concat下面这种方式,避免sql注入
+        如果返回值是集合,返回值类型只需要指定结果类型的泛型-->
+    <select id="selectByUserName2" resultType="cn.itheima.mybatis.pojo.User" parameterType="string">
+        SELECT  * FROM  USER WHERE username LIKE  CONCAT ('%',#{name},'%')
+    </select>
+
+
+    <!--添加用户-->
+    <insert id="insertUser" parameterType="cn.itheima.mybatis.pojo.User">
+        /*通过selectKey实现将主键返回*/
+        <!-- KeyProperty: 获取到的数据封装在实体类的那个属性身上 ,
+             resultType:定义返回的主键类型
+            selectKey的执行顺序，是相对与insert语句来说，
+           由于mysql的自增原理执行完insert语句之后才将主键生成，所以这里selectKey的执行顺序为after.
+           如果使用uuid做主键，应该先生成uuid主键然后插入数据，此时应该使用Before
+         -->
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            <!--LAST_INSERT_ID():是mysql的函数，返回auto_increment自增列新记录id值-->
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO USER(username,birthday,sex,address) values (#{username},#{birthday},#{sex},#{address})
+    </insert>
+
+    <!--第二种方式 表示主键自增
+     useGeneratedKeys="true" 自增的主键
+     keyProperty : 获取到的数据封装在实体类的那个属性身上-->
+    <insert id="insertUser2" keyProperty="id" useGeneratedKeys="true" parameterType="cn.itheima.mybatis.pojo.User">
+         INSERT INTO USER(username,birthday,sex,address) values (#{username},#{birthday},#{sex},#{address})
+    </insert>
+
+    <!--删除用户-->
+    <delete id="deleteById" parameterType="integer">
+        DELETE  FROM USER  WHERE id = #{aa}
+    </delete>
+
+
+    <!--更新用户-->
+    <update id="updateById" parameterType="cn.itheima.mybatis.pojo.User">
+      UPDATE  USER SET username = #{username} ,birthday = #{birthday} ,sex=#{sex},address=#{address} WHERE id=#{id}
+    </update>
+</mapper>

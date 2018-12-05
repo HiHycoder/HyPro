@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--名称空间要和接口的全限定名一致-->
+<mapper namespace="cn.itheima.mybatis.mapper.OrderMapper">
+
+    <!--查询所有订单-->
+    <select id="findOrderList" resultType="orders">
+        /* select * from orders*/
+       /* 解决字段名和列名不一致的问题 : 方案一 : 给字段取别名*/
+       SELECT id,user_id userId,number,createtime,note from orders
+    </select>
+
+
+    <!-- resultMap入门 -->
+    <!--方案二 : 使用 resultMap-->
+    <!-- 定义resultMap
+         id : 指定唯一标识
+		 type:封装数据的javaBean，可以使用别名
+          <id/>: 指定主键列
+          <result/> : 指定非主键列
+          property: 代表javaBean的属性名
+          column:  代表sql语句返回的列名
+		 -->
+    <resultMap id="order_list_result_map" type="orders">
+        <!--单标查询中,如果列名和属性名一致,可以不写-->
+        <!--   <id property="id" column="id"/>
+        <result property="number" column="number"/>
+        <result property="createtime" column="createtime"/>
+        <result property="note" column="note"/>   -->
+        <result property="userId" column="user_id"/>
+    </resultMap>
+    <!--通过resultMap的方式查询所有订单-->
+    <select id="findOrderListResultMap" resultMap="order_list_result_map">
+           SELECT * FROM orders
+    </select>
+
+    <!--需求: 查询订单信息关联用户-->
+    <!--关联映射 一对一 形式一 : 使用resultType-->
+    <select id="findOrderUserList" resultType="orderuser">
+      SELECT
+			o.id,
+			o.user_id userId,
+			o.number,
+			o.createtime,
+			o.note,
+			u.username,
+			u.address
+		FROM
+			orders o
+		LEFT JOIN user u ON o.user_id = u.id
+    </select>
+
+    <!--关联映射 一对一 形式二: 使用resultMap-->
+    <!--先定义resultMap-->
+    <resultMap id="order_user_result_map" type="orders">
+        <!--order的主键列-->
+        <id property="id" column="id"/>
+        <!--普通列-->
+        <result property="userId" column="user_id"/>
+        <result property="number" column="number"/>
+        <result property="createtime" column="createtime"/>
+        <result property="note" column="note"/>
+        <!--配置关联映射 一对一 -->
+        <!-- property：对于orders中user的属性.javaType：代表user属性的数据类型-->
+        <association property="user" javaType="cn.itheima.mybatis.pojo.User">
+            <!--user的主键列-->
+            <id property="id" column="id"/>
+            <!--非主键列-->
+            <result property="username" column="username"/>
+            <result property="address" column="address"/>
+        </association>
+    </resultMap>
+    <!--通过resultMap形式查询订单同时关联客户-->
+    <select id="findOrderUserResultMap" resultMap="order_user_result_map">
+        SELECT
+			o.id,
+			o.user_id userId,
+			o.number,
+			o.createtime,
+			o.note,
+			u.username,
+			u.address
+		FROM
+			orders o
+		LEFT JOIN user u ON o.user_id = u.id
+    </select>
+
+</mapper>

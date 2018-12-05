@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--如果映射文件的id一致的时候,是使用namespace来区分的-->
+<mapper namespace="cn.itheima.mybatis.mapper.UserMapper">
+
+    <!-- 根据id查询用户 -->
+    <select id="findById" parameterType="int" resultType="user">
+    select * from user where id = #{id}
+    </select>
+
+    <!-- 模糊查询,使用Concat避免sql注入-->
+    <select id="findByName" parameterType="string" resultType="user">
+         select  * from  user where username like concat("%",#{username},"%")
+    </select>
+
+    <!-- 添加用户 -->
+    <insert id="insertUser" parameterType="user">
+        insert into user(username,birthday,sex,address)
+        values(#{username},#{birthday},#{sex},#{address})
+    </insert>
+
+    <!--包装类的参数类型-->
+    <select id="findByQueryVo" parameterType="queryvo" resultType="user">
+        select * from user where username like concat("%",#{user.username},"%") and id = #{user.id}
+    </select>
+
+    <!--简单类型的返回值  Sql返回的必须是一行一列-->
+    <select id="findUserCount" parameterType="user" resultType="integer">
+          select count(1) from user
+    </select>
+
+<!--sql片段提取-->
+<sql id="find_user_list_where">
+    <where>
+        <if test="id!=null">
+            and id = #{id}
+        </if>
+        <if test="username!=null and username!=''">
+            and username like concat("%",#{username},"%")
+        </if>
+    </where>
+</sql>
+<!--sql片段提取-->
+<sql id="find_field_user">
+      id,username,birthday,sex,address
+  </sql>
+
+    <!--动态sql if标签-->
+    <select id="findByIf" parameterType="user" resultType="user">
+        SELECT
+        <include refid="find_field_user"/>
+        FROM user
+        <include refid="find_user_list_where"/>
+    </select>
+
+    <!--动态sql,forEach测试-->
+    <!--
+
+       foreach标签用来动态的拼接集合类型的数据
+       collection ： 表示要遍历的属性的名字
+       open ：ＳＱＬ语句开始的部分
+       close　：　ＳＱＬ语句结束的部分
+       separator　：　分隔符
+       item　：表示每一个遍历到的对象，在foreach标签中使用的占位符必须和该属性声明的值保持一致
+   -->
+
+    <select id="findByForeach" parameterType="queryvo" resultType="user">
+        SELECT
+        <include refid="find_field_user"/>
+        FROM user
+        <where>
+            <!--and id in(1,10,16,27)-->
+            <foreach collection="ids" item="id" open="and id in (" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+
+    <!--set标签测试-->
+     <update id="updateUserBySet" parameterType="user">
+         update user
+         <!-- 自定拼接关键字:SET ,自动去掉多余, -->
+         <set>
+             <if test="username !=null and username != ''">
+                 username = #{username},
+             </if>
+             <if test="birthday !=null">
+                 birthday = #{birthday},
+             </if>
+             <if test="sex !=null and sex != ''">
+                 sex = #{sex},
+             </if>
+             <if test="address !=null and address != ''">
+                 address= #{address},
+             </if>
+         </set>
+         where id = #{id}
+     </update>
+
+    <!--关联映射  一对多 需求: 查询客户信息的时候关联订单-->
+    <!--定义resultMap-->
+    <resultMap id="user_order_result_map" type="cn.itheima.mybatis.pojo.User">
+        <!--user的主键列-->
+        <id property="id" column="id"/>
+        <!--其他列-->
+        <result property="username" column="username"/>
+        <result property="birthday" column="birthday"/>
+        <result property="sex" column="sex"/>
+        <result property="address" column="address"/>
+        <!-- 配置关联映射 一对多 -->
+        <!--
+              collection标签用于定义一对多的关系
+                  property ： 本类中表示对方的属性的名字
+                  ofType ： 集合属性中泛型的类型的全类名
+          -->
+        <collection property="ordersList" ofType="cn.itheima.mybatis.pojo.Orders">
+            <!--order的主键列-->
+            <id property="id" column="oid"/>
+            <!--其他列-->
+            <result property="number" column="number"/>
+            <result property="createtime" column="createtime"/>
+            <result property="note" column="note"/>
+        </collection>
+    </resultMap>
+    <select id="findUserWithOrders" resultMap="user_order_result_map">
+            SELECT
+            u.* ,
+            o.id  AS oid,
+            o.user_id,
+            o.number,
+            o.createtime,
+            o.note
+            FROM
+            `user` u
+            LEFT JOIN orders o ON  u.id = o.user_id ;
+
+      </select>
+</mapper>
