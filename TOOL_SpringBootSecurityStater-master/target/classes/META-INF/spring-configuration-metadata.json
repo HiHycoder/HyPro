@@ -1,0 +1,29 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "com.liutao.util.springboot.security.auto.SecurityProperties",
+      "name": "spring.encrypt",
+      "type": "com.liutao.util.springboot.security.auto.SecurityProperties"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "com.liutao.util.springboot.security.auto.SecurityProperties",
+      "defaultValue": "UTF-8",
+      "name": "spring.encrypt.charset",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.liutao.util.springboot.security.auto.SecurityProperties",
+      "defaultValue": false,
+      "name": "spring.encrypt.debug",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.liutao.util.springboot.security.auto.SecurityProperties",
+      "name": "spring.encrypt.private-key",
+      "type": "java.lang.String"
+    }
+  ]
+}
